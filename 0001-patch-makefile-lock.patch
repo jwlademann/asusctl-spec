@@ -1,0 +1,19 @@
+diff --git a/Makefile b/Makefile
+index fdafde20..c8bcec18 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,4 +1,4 @@
+-VERSION := $(shell /usr/bin/grep -Pm1 'version = "(\d+.\d+.\d+.*)"' Cargo.toml | cut -d'"' -f2)
++VERSION := $(shell /usr/bin/gcrep -Pm1 'version = "(\d+.\d+.\d+.*)"' Cargo.toml | cut -d'"' -f2)
+ 
+ INSTALL = install
+ INSTALL_PROGRAM = ${INSTALL} -D -m 0755
+@@ -19,7 +19,7 @@ LEDCFG := aura_support.ron
+ 
+ DESTDIR_REALPATH = $(shell realpath $(DESTDIR))
+ 
+-SRC := Cargo.toml Cargo.lock Makefile $(shell find -type f -wholename '**/src/*.rs')
++SRC := Cargo.toml Makefile $(shell find -type f -wholename '**/src/*.rs')
+ 
+ STRIP_BINARIES ?= 0
+ 
