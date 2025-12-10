@@ -1,0 +1,83 @@
+diff --git a/Makefile b/Makefile
+index fdafde20..63db0d80 100644
+--- a/Makefile
++++ b/Makefile
+@@ -19,7 +19,7 @@ LEDCFG := aura_support.ron
+ 
+ DESTDIR_REALPATH = $(shell realpath $(DESTDIR))
+ 
+-SRC := Cargo.toml Cargo.lock Makefile $(shell find -type f -wholename '**/src/*.rs')
++SRC := Cargo.toml Makefile $(shell find -type f -wholename '**/src/*.rs')
+ 
+ STRIP_BINARIES ?= 0
+ 
+diff --git a/rog-slash/src/data.rs b/rog-slash/src/data.rs
+index 317f5c73..2e3e8e21 100644
+--- a/rog-slash/src/data.rs
++++ b/rog-slash/src/data.rs
+@@ -13,6 +13,7 @@ use crate::usb::{PROD_ID1, PROD_ID1_STR, PROD_ID2, PROD_ID2_STR};
+ #[derive(Default, Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize)]
+ pub enum SlashType {
+     GA403,
++    GA403_2025,
+     GA605,
+     GU605,
+     #[default]
+@@ -23,6 +24,7 @@ impl SlashType {
+     pub const fn prod_id(&self) -> u16 {
+         match self {
+             SlashType::GA403 => PROD_ID1,
++            SlashType::GA403_2025 => PROD_ID2,
+             SlashType::GA605 => PROD_ID2,
+             SlashType::GU605 => PROD_ID1,
+             SlashType::Unsupported => 0,
+@@ -32,6 +34,7 @@ impl SlashType {
+     pub const fn prod_id_str(&self) -> &str {
+         match self {
+             SlashType::GA403 => PROD_ID1_STR,
++            SlashType::GA403_2025 => PROD_ID2_STR,
+             SlashType::GA605 => PROD_ID2_STR,
+             SlashType::GU605 => PROD_ID1_STR,
+             SlashType::Unsupported => "",
+@@ -40,7 +43,9 @@ impl SlashType {
+ 
+     pub fn from_dmi() -> Self {
+         let board_name = DMIID::new().unwrap_or_default().board_name.to_uppercase();
+-        if board_name.contains("GA403") {
++        if board_name.contains("GA403UP") {
++            SlashType::GA403_2025
++        } else if board_name.contains("GA403") {
+             SlashType::GA403
+         } else if board_name.contains("GA605") {
+             SlashType::GA605
+@@ -57,6 +62,7 @@ impl FromStr for SlashType {
+ 
+     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+         Ok(match s {
++            "ga403up" | "GA403UP" => Self::GA403_2025,
+             "ga403" | "GA403" => Self::GA403,
+             "ga605" | "GA605" => Self::GA605,
+             "gu605" | "GU605" => Self::GU605,
+diff --git a/rog-slash/src/usb.rs b/rog-slash/src/usb.rs
+index 74183df8..05f87de7 100644
+--- a/rog-slash/src/usb.rs
++++ b/rog-slash/src/usb.rs
+@@ -39,7 +39,9 @@ pub fn get_slash_type() -> SlashType {
+         .unwrap_or_default();
+     let board_name = dmi.board_name;
+ 
+-    if board_name.contains("GA403") {
++    if board_name.contains("GA403UP") {
++        SlashType::GA403_2025
++    } else if board_name.contains("GA403") {
+         SlashType::GA403
+     } else if board_name.contains("GA605") {
+         SlashType::GA605
+@@ -53,6 +55,7 @@ pub fn get_slash_type() -> SlashType {
+ pub const fn report_id(slash_type: SlashType) -> u8 {
+     match slash_type {
+         SlashType::GA403 => REPORT_ID_193B,
++        SlashType::GA403_2025 => REPORT_ID_19B6,
+         SlashType::GA605 => REPORT_ID_19B6,
+         SlashType::GU605 => REPORT_ID_193B,
+         SlashType::Unsupported => REPORT_ID_19B6,

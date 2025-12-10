@@ -22,7 +22,7 @@
 
 %define version 6.1.22
 %define specrelease %{?dist}
-%define pkg_release 1%{specrelease}
+%define pkg_release 2%{specrelease}
 
 # Use hardening ldflags.
 %global rustflags -Clink-arg=-Wl,-z,relro,-z,now
@@ -36,7 +36,7 @@ Group:   System Environment/Kernel
 
 URL:     https://gitlab.com/asus-linux/asusctl
 Source:  https://gitlab.com/asus-linux/asusctl/-/archive/%{version}/%{name}-%{version}.tar.gz
-Patch1:  0001-patch-makefile-lock.patch
+Patch1:  0001-makefile-ga403-2025-updates.patch
 
 %if %{defined fedora}
 BuildRequires:  rust-packaging
@@ -75,7 +75,7 @@ A one-stop-shop GUI tool for asusd/asusctl. It aims to provide most controls,
 a notification service, and ability to run in the background.
 
 %prep
-%autosetup
+%autosetup -p1
 %if %{defined fedora}
 %cargo_prep
 sed -i 's|offline = true|offline = false|' .cargo/config.toml
